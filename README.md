@@ -27,7 +27,7 @@ then verify the plugins
   npm run verify
 ```
 
-finally run the appropiate IDE (i.e, Android Studio / XCode) to compile the code.
+finally open the appropiate IDE (i.e, Android Studio / XCode) to compile the code.
 
 ```
 npx cap open ios
