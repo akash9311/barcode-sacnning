@@ -14,6 +14,25 @@ Unofficial Capacitor plugin for [ML Kit Barcode Scanning](https://developers.goo
 
 For a complete list of **supported barcodes**, see [BarcodeFormat](#barcodeformat).
 
+## Modifying Plugins
+
+In the root run
+```
+  npm install 
+```
+
+then in the package you want to use 
+
+```
+  npm install
+```
+
+then verify the plugins
+
+```
+  npm run verify
+```
+
 ## Demo
 
 A working example can be found here: [https://github.com/robingenz/capacitor-mlkit-plugin-demo](https://github.com/robingenz/capacitor-mlkit-plugin-demo)
