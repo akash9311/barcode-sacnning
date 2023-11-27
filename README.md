@@ -14,23 +14,24 @@ Unofficial Capacitor plugin for [ML Kit Barcode Scanning](https://developers.goo
 
 For a complete list of **supported barcodes**, see [BarcodeFormat](#barcodeformat).
 
-## Modifying Plugins
+## Modifying Plugin
 
 In the root run
 ```
   npm install 
 ```
 
-then in the package you want to use 
-
-```
-  npm install
-```
-
 then verify the plugins
 
 ```
   npm run verify
+```
+
+finally run the appropiate IDE (i.e, Android Studio / XCode) to compile the code.
+
+```
+npx cap open ios
+npx cap open android
 ```
 
 ## Demo
