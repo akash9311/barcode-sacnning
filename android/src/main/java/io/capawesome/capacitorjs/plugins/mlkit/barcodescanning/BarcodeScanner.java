@@ -166,8 +166,8 @@ public class BarcodeScanner implements ImageAnalysis.Analyzer {
             );
     }
 
-    public void readBarcodesBase64(String base64, ScanSettings scanSettings, ReadBarcodesFromImageResultCallback callback)
-            throws Exception {
+    public void readBarcodeBase64(String base64, ScanSettings scanSettings, ReadBarcodesFromImageResultCallback callback)
+        throws Exception {
         InputImage inputImage;
         try {
             byte[] decodedBytes = Base64.decode(base64, Base64.DEFAULT);

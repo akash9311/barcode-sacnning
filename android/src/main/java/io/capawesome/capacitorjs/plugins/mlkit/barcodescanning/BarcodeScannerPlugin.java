@@ -168,7 +168,7 @@ public class BarcodeScannerPlugin extends Plugin {
 
 
     @PluginMethod
-    public void readBarcodesBase64(PluginCall call) {
+    public void readBarcodeBase64(PluginCall call) {
         try {
             String base64 = call.getString("base64");
             if (base64 == null) {
@@ -182,7 +182,7 @@ public class BarcodeScannerPlugin extends Plugin {
             ScanSettings scanSettings = new ScanSettings();
             scanSettings.formats = formats;
 
-            implementation.readBarcodesBase64(
+            implementation.readBarcodeBase64(
                     base64,
                     scanSettings,
                     new ReadBarcodesFromImageResultCallback() {
