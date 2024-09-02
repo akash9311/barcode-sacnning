@@ -14,26 +14,6 @@ Unofficial Capacitor plugin for [ML Kit Barcode Scanning](https://developers.goo
 
 For a complete list of **supported barcodes**, see [BarcodeFormat](#barcodeformat).
 
-## Modifying Plugin
-
-In the root run
-```
-  npm install 
-```
-
-then verify the plugins
-
-```
-  npm run verify
-```
-
-finally open the appropiate IDE (i.e, Android Studio / XCode) to compile the code.
-
-```
-npx cap open ios
-npx cap open android
-```
-
 ## Demo
 
 A working example can be found here: [https://github.com/robingenz/capacitor-mlkit-plugin-demo](https://github.com/robingenz/capacitor-mlkit-plugin-demo)
@@ -55,6 +35,8 @@ npx cap sync
 
 ### Android
 
+#### Permissions
+
 This API requires the following permissions be added to your `AndroidManifest.xml` before the `application` tag:
 
 ```xml
@@ -69,6 +51,22 @@ You also need to add the following meta data **in** the `application` tag in you
 ```xml
 <meta-data android:name="com.google.mlkit.vision.DEPENDENCIES" android:value="barcode_ui"/>
 <!-- To use multiple models: android:value="face,model2,model3" -->
+```
+
+#### Data Binding
+
+Enable the databinding library by setting the `dataBinding` and `enabled` build options to `true` in your module-level (app-level) Gradle file (usually `android/app/build.gradle`):
+
+```diff
+android {
+    ...
++    buildFeatures {
++        dataBinding true
++    }
++    dataBinding {
++        enabled = true
++    }
+}
 ```
 
 #### Variables
@@ -192,6 +190,25 @@ const isTorchAvailable = async () => {
   return available;
 };
 
+const setZoomRatio = async () => {
+  await BarcodeScanner.setZoomRatio({ zoomRatio: 0.5 });
+};
+
+const getZoomRatio = async () => {
+  const { zoomRatio } = await BarcodeScanner.getZoomRatio();
+  return zoomRatio;
+};
+
+const getMinZoomRatio = async () => {
+  const { zoomRatio } = await BarcodeScanner.getMinZoomRatio();
+  return zoomRatio;
+};
+
+const getMaxZoomRatio = async () => {
+  const { zoomRatio } = await BarcodeScanner.getMaxZoomRatio();
+  return zoomRatio;
+};
+
 const openSettings = async () => {
   await BarcodeScanner.openSettings();
 };
@@ -263,7 +280,6 @@ If you can't see the camera view, make sure all elements in the DOM are not visi
 * [`startScan(...)`](#startscan)
 * [`stopScan()`](#stopscan)
 * [`readBarcodesFromImage(...)`](#readbarcodesfromimage)
-* [`readBarcodeBase64(...)`](#readbarcodebase64)
 * [`scan(...)`](#scan)
 * [`isSupported()`](#issupported)
 * [`enableTorch()`](#enabletorch)
@@ -271,6 +287,10 @@ If you can't see the camera view, make sure all elements in the DOM are not visi
 * [`toggleTorch()`](#toggletorch)
 * [`isTorchEnabled()`](#istorchenabled)
 * [`isTorchAvailable()`](#istorchavailable)
+* [`setZoomRatio(...)`](#setzoomratio)
+* [`getZoomRatio()`](#getzoomratio)
+* [`getMinZoomRatio()`](#getminzoomratio)
+* [`getMaxZoomRatio()`](#getmaxzoomratio)
 * [`openSettings()`](#opensettings)
 * [`isGoogleBarcodeScannerModuleAvailable()`](#isgooglebarcodescannermoduleavailable)
 * [`installGoogleBarcodeScannerModule()`](#installgooglebarcodescannermodule)
@@ -344,10 +364,10 @@ Only available on Android and iOS.
 --------------------
 
 
-### readBarcodeBase64(...)
+### scan(...)
 
 ```typescript
-readBarcodeBase64(options: ReadBarcodeFromBase64) => Promise<ReadBarcodesFromImageResult>
+scan(options?: ScanOptions | undefined) => Promise<ScanResult>
 ```
 
 Scan a barcode with a ready-to-use interface without WebView customization.
@@ -355,32 +375,18 @@ Scan a barcode with a ready-to-use interface without WebView customization.
 On **Android**, this method is only available on devices with Google Play Services
 installed. Therefore, no camera permission is required.
 
-**Attention:** Before using this method on *Android*, first check if the Google <a href="#barcode">Barcode</a> Scanner module is available.
+**Attention:** Before using this method on *Android*, first check if the Google <a href="#barcode">Barcode</a> Scanner module is available
+by using `isGoogleBarcodeScannerModuleAvailable()`.
 
 Only available on Android and iOS.
-
-| Param         | Type                                                                    |
-| ------------- | ----------------------------------------------------------------------- |
-| **`options`** | <code><a href="#readbarcodefrombase64">ReadBarcodeFromBase64</a></code> |
-
-**Returns:** <code>Promise&lt;<a href="#readbarcodesfromimageresult">ReadBarcodesFromImageResult</a>&gt;</code>
-
-**Since:** 0.0.1
-
---------------------
-
-
-### scan(...)
-
-```typescript
-scan(options?: ScanOptions | undefined) => Promise<ScanResult>
-```
 
 | Param         | Type                                                |
 | ------------- | --------------------------------------------------- |
 | **`options`** | <code><a href="#scanoptions">ScanOptions</a></code> |
 
 **Returns:** <code>Promise&lt;<a href="#scanresult">ScanResult</a>&gt;</code>
+
+**Since:** 0.0.1
 
 --------------------
 
@@ -481,6 +487,76 @@ Only available on Android and iOS.
 --------------------
 
 
+### setZoomRatio(...)
+
+```typescript
+setZoomRatio(options: SetZoomRatioOptions) => Promise<void>
+```
+
+Set the zoom ratio of the camera.
+
+Only available on Android and iOS.
+
+| Param         | Type                                                                |
+| ------------- | ------------------------------------------------------------------- |
+| **`options`** | <code><a href="#setzoomratiooptions">SetZoomRatioOptions</a></code> |
+
+**Since:** 5.4.0
+
+--------------------
+
+
+### getZoomRatio()
+
+```typescript
+getZoomRatio() => Promise<GetZoomRatioResult>
+```
+
+Get the zoom ratio of the camera.
+
+Only available on Android and iOS.
+
+**Returns:** <code>Promise&lt;<a href="#getzoomratioresult">GetZoomRatioResult</a>&gt;</code>
+
+**Since:** 5.4.0
+
+--------------------
+
+
+### getMinZoomRatio()
+
+```typescript
+getMinZoomRatio() => Promise<GetMinZoomRatioResult>
+```
+
+Get the minimum zoom ratio of the camera.
+
+Only available on Android and iOS.
+
+**Returns:** <code>Promise&lt;<a href="#getminzoomratioresult">GetMinZoomRatioResult</a>&gt;</code>
+
+**Since:** 5.4.0
+
+--------------------
+
+
+### getMaxZoomRatio()
+
+```typescript
+getMaxZoomRatio() => Promise<GetMaxZoomRatioResult>
+```
+
+Get the maximum zoom ratio of the camera.
+
+Only available on Android and iOS.
+
+**Returns:** <code>Promise&lt;<a href="#getmaxzoomratioresult">GetMaxZoomRatioResult</a>&gt;</code>
+
+**Since:** 5.4.0
+
+--------------------
+
+
 ### openSettings()
 
 ```typescript
@@ -503,6 +579,8 @@ isGoogleBarcodeScannerModuleAvailable() => Promise<IsGoogleBarcodeScannerModuleA
 ```
 
 Check if the Google <a href="#barcode">Barcode</a> Scanner module is available.
+
+If the Google <a href="#barcode">Barcode</a> Scanner module is not available, you can install it by using `installGoogleBarcodeScannerModule()`.
 
 Only available on Android.
 
@@ -569,7 +647,7 @@ Only available on Android and iOS.
 ### addListener('barcodeScanned', ...)
 
 ```typescript
-addListener(eventName: 'barcodeScanned', listenerFunc: (event: BarcodeScannedEvent) => void) => Promise<PluginListenerHandle> & PluginListenerHandle
+addListener(eventName: 'barcodeScanned', listenerFunc: (event: BarcodeScannedEvent) => void) => Promise<PluginListenerHandle>
 ```
 
 Called when a barcode is scanned.
@@ -581,7 +659,7 @@ Available on Android and iOS.
 | **`eventName`**    | <code>'barcodeScanned'</code>                                                           |
 | **`listenerFunc`** | <code>(event: <a href="#barcodescannedevent">BarcodeScannedEvent</a>) =&gt; void</code> |
 
-**Returns:** <code>Promise&lt;<a href="#pluginlistenerhandle">PluginListenerHandle</a>&gt; & <a href="#pluginlistenerhandle">PluginListenerHandle</a></code>
+**Returns:** <code>Promise&lt;<a href="#pluginlistenerhandle">PluginListenerHandle</a>&gt;</code>
 
 **Since:** 0.0.1
 
@@ -591,7 +669,7 @@ Available on Android and iOS.
 ### addListener('scanError', ...)
 
 ```typescript
-addListener(eventName: 'scanError', listenerFunc: (event: ScanErrorEvent) => void) => Promise<PluginListenerHandle> & PluginListenerHandle
+addListener(eventName: 'scanError', listenerFunc: (event: ScanErrorEvent) => void) => Promise<PluginListenerHandle>
 ```
 
 Called when an error occurs during the scan.
@@ -603,7 +681,7 @@ Available on Android and iOS.
 | **`eventName`**    | <code>'scanError'</code>                                                      |
 | **`listenerFunc`** | <code>(event: <a href="#scanerrorevent">ScanErrorEvent</a>) =&gt; void</code> |
 
-**Returns:** <code>Promise&lt;<a href="#pluginlistenerhandle">PluginListenerHandle</a>&gt; & <a href="#pluginlistenerhandle">PluginListenerHandle</a></code>
+**Returns:** <code>Promise&lt;<a href="#pluginlistenerhandle">PluginListenerHandle</a>&gt;</code>
 
 **Since:** 0.0.1
 
@@ -613,7 +691,7 @@ Available on Android and iOS.
 ### addListener('googleBarcodeScannerModuleInstallProgress', ...)
 
 ```typescript
-addListener(eventName: 'googleBarcodeScannerModuleInstallProgress', listenerFunc: (event: GoogleBarcodeScannerModuleInstallProgressEvent) => void) => Promise<PluginListenerHandle> & PluginListenerHandle
+addListener(eventName: 'googleBarcodeScannerModuleInstallProgress', listenerFunc: (event: GoogleBarcodeScannerModuleInstallProgressEvent) => void) => Promise<PluginListenerHandle>
 ```
 
 Called when the Google <a href="#barcode">Barcode</a> Scanner module is installed.
@@ -625,7 +703,7 @@ Available on Android.
 | **`eventName`**    | <code>'googleBarcodeScannerModuleInstallProgress'</code>                                                                                      |
 | **`listenerFunc`** | <code>(event: <a href="#googlebarcodescannermoduleinstallprogressevent">GoogleBarcodeScannerModuleInstallProgressEvent</a>) =&gt; void</code> |
 
-**Returns:** <code>Promise&lt;<a href="#pluginlistenerhandle">PluginListenerHandle</a>&gt; & <a href="#pluginlistenerhandle">PluginListenerHandle</a></code>
+**Returns:** <code>Promise&lt;<a href="#pluginlistenerhandle">PluginListenerHandle</a>&gt;</code>
 
 **Since:** 5.1.0
 
@@ -683,14 +761,6 @@ Remove all listeners for this plugin.
 | **`path`**    | <code>string</code>          | The local path to the image file.                                                        | 0.0.1 |
 
 
-#### ReadBarcodeFromBase64
-
-| Prop          | Type                         |
-| ------------- | ---------------------------- |
-| **`formats`** | <code>BarcodeFormat[]</code> |
-| **`base64`**  | <code>string</code>          |
-
-
 #### ScanResult
 
 | Prop           | Type                   | Description            | Since |
@@ -707,9 +777,9 @@ Remove all listeners for this plugin.
 
 #### IsSupportedResult
 
-| Prop            | Type                 | Description                                      | Since |
-| --------------- | -------------------- | ------------------------------------------------ | ----- |
-| **`supported`** | <code>boolean</code> | Whether or not the barcode scanner is supported. | 0.0.1 |
+| Prop            | Type                 | Description                                                                             | Since |
+| --------------- | -------------------- | --------------------------------------------------------------------------------------- | ----- |
+| **`supported`** | <code>boolean</code> | Whether or not the barcode scanner is supported by checking if the device has a camera. | 0.0.1 |
 
 
 #### IsTorchEnabledResult
@@ -724,6 +794,34 @@ Remove all listeners for this plugin.
 | Prop            | Type                 | Description                            | Since |
 | --------------- | -------------------- | -------------------------------------- | ----- |
 | **`available`** | <code>boolean</code> | Whether or not the torch is available. | 0.0.1 |
+
+
+#### SetZoomRatioOptions
+
+| Prop            | Type                | Description            | Since |
+| --------------- | ------------------- | ---------------------- | ----- |
+| **`zoomRatio`** | <code>number</code> | The zoom ratio to set. | 5.4.0 |
+
+
+#### GetZoomRatioResult
+
+| Prop            | Type                | Description     | Since |
+| --------------- | ------------------- | --------------- | ----- |
+| **`zoomRatio`** | <code>number</code> | The zoom ratio. | 5.4.0 |
+
+
+#### GetMinZoomRatioResult
+
+| Prop            | Type                | Description             | Since |
+| --------------- | ------------------- | ----------------------- | ----- |
+| **`zoomRatio`** | <code>number</code> | The minimum zoom ratio. | 5.4.0 |
+
+
+#### GetMaxZoomRatioResult
+
+| Prop            | Type                | Description             | Since |
+| --------------- | ------------------- | ----------------------- | ----- |
+| **`zoomRatio`** | <code>number</code> | The maximum zoom ratio. | 5.4.0 |
 
 
 #### IsGoogleBarcodeScannerModuleAvailableResult
@@ -789,46 +887,46 @@ Remove all listeners for this plugin.
 
 | Members          | Value                      | Description                        | Since |
 | ---------------- | -------------------------- | ---------------------------------- | ----- |
-| **`Aztec`**      | <code>"AZTEC"</code>       | Only available on Android and iOS. | 0.0.1 |
-| **`Codabar`**    | <code>"CODABAR"</code>     | Only available on Android and iOS. | 0.0.1 |
-| **`Code39`**     | <code>"CODE_39"</code>     | Only available on Android and iOS. | 0.0.1 |
-| **`Code93`**     | <code>"CODE_93"</code>     | Only available on Android and iOS. | 0.0.1 |
-| **`Code128`**    | <code>"CODE_128"</code>    | Only available on Android and iOS. | 0.0.1 |
-| **`DataMatrix`** | <code>"DATA_MATRIX"</code> | Only available on Android and iOS. | 0.0.1 |
-| **`Ean8`**       | <code>"EAN_8"</code>       | Only available on Android and iOS. | 0.0.1 |
-| **`Ean13`**      | <code>"EAN_13"</code>      | Only available on Android and iOS. | 0.0.1 |
-| **`Itf`**        | <code>"ITF"</code>         | Only available on Android and iOS. | 0.0.1 |
-| **`Pdf417`**     | <code>"PDF_417"</code>     | Only available on Android and iOS. | 0.0.1 |
-| **`QrCode`**     | <code>"QR_CODE"</code>     | Only available on Android and iOS. | 0.0.1 |
-| **`UpcA`**       | <code>"UPC_A"</code>       | Only available on Android and iOS. | 0.0.1 |
-| **`UpcE`**       | <code>"UPC_E"</code>       | Only available on Android and iOS. | 0.0.1 |
+| **`Aztec`**      | <code>'AZTEC'</code>       | Only available on Android and iOS. | 0.0.1 |
+| **`Codabar`**    | <code>'CODABAR'</code>     | Only available on Android and iOS. | 0.0.1 |
+| **`Code39`**     | <code>'CODE_39'</code>     | Only available on Android and iOS. | 0.0.1 |
+| **`Code93`**     | <code>'CODE_93'</code>     | Only available on Android and iOS. | 0.0.1 |
+| **`Code128`**    | <code>'CODE_128'</code>    | Only available on Android and iOS. | 0.0.1 |
+| **`DataMatrix`** | <code>'DATA_MATRIX'</code> | Only available on Android and iOS. | 0.0.1 |
+| **`Ean8`**       | <code>'EAN_8'</code>       | Only available on Android and iOS. | 0.0.1 |
+| **`Ean13`**      | <code>'EAN_13'</code>      | Only available on Android and iOS. | 0.0.1 |
+| **`Itf`**        | <code>'ITF'</code>         | Only available on Android and iOS. | 0.0.1 |
+| **`Pdf417`**     | <code>'PDF_417'</code>     | Only available on Android and iOS. | 0.0.1 |
+| **`QrCode`**     | <code>'QR_CODE'</code>     | Only available on Android and iOS. | 0.0.1 |
+| **`UpcA`**       | <code>'UPC_A'</code>       | Only available on Android and iOS. | 0.0.1 |
+| **`UpcE`**       | <code>'UPC_E'</code>       | Only available on Android and iOS. | 0.0.1 |
 
 
 #### LensFacing
 
 | Members     | Value                | Since |
 | ----------- | -------------------- | ----- |
-| **`Front`** | <code>"FRONT"</code> | 0.0.1 |
-| **`Back`**  | <code>"BACK"</code>  | 0.0.1 |
+| **`Front`** | <code>'FRONT'</code> | 0.0.1 |
+| **`Back`**  | <code>'BACK'</code>  | 0.0.1 |
 
 
 #### BarcodeValueType
 
 | Members              | Value                          | Since |
 | -------------------- | ------------------------------ | ----- |
-| **`CalendarEvent`**  | <code>"CALENDAR_EVENT"</code>  | 0.0.1 |
-| **`ContactInfo`**    | <code>"CONTACT_INFO"</code>    | 0.0.1 |
-| **`DriversLicense`** | <code>"DRIVERS_LICENSE"</code> | 0.0.1 |
-| **`Email`**          | <code>"EMAIL"</code>           | 0.0.1 |
-| **`Geo`**            | <code>"GEO"</code>             | 0.0.1 |
-| **`Isbn`**           | <code>"ISBN"</code>            | 0.0.1 |
-| **`Phone`**          | <code>"PHONE"</code>           | 0.0.1 |
-| **`Product`**        | <code>"PRODUCT"</code>         | 0.0.1 |
-| **`Sms`**            | <code>"SMS"</code>             | 0.0.1 |
-| **`Text`**           | <code>"TEXT"</code>            | 0.0.1 |
-| **`Url`**            | <code>"URL"</code>             | 0.0.1 |
-| **`Wifi`**           | <code>"WIFI"</code>            | 0.0.1 |
-| **`Unknown`**        | <code>"UNKNOWN"</code>         | 0.0.1 |
+| **`CalendarEvent`**  | <code>'CALENDAR_EVENT'</code>  | 0.0.1 |
+| **`ContactInfo`**    | <code>'CONTACT_INFO'</code>    | 0.0.1 |
+| **`DriversLicense`** | <code>'DRIVERS_LICENSE'</code> | 0.0.1 |
+| **`Email`**          | <code>'EMAIL'</code>           | 0.0.1 |
+| **`Geo`**            | <code>'GEO'</code>             | 0.0.1 |
+| **`Isbn`**           | <code>'ISBN'</code>            | 0.0.1 |
+| **`Phone`**          | <code>'PHONE'</code>           | 0.0.1 |
+| **`Product`**        | <code>'PRODUCT'</code>         | 0.0.1 |
+| **`Sms`**            | <code>'SMS'</code>             | 0.0.1 |
+| **`Text`**           | <code>'TEXT'</code>            | 0.0.1 |
+| **`Url`**            | <code>'URL'</code>             | 0.0.1 |
+| **`Wifi`**           | <code>'WIFI'</code>            | 0.0.1 |
+| **`Unknown`**        | <code>'UNKNOWN'</code>         | 0.0.1 |
 
 
 #### GoogleBarcodeScannerModuleInstallState
@@ -845,6 +943,13 @@ Remove all listeners for this plugin.
 | **`DOWNLOAD_PAUSED`** | <code>7</code> | 5.1.0 |
 
 </docgen-api>
+
+## Common Issues
+
+### `NullPointerException` during `startScan(...)`
+
+The following error may occur when calling the `startScan(...)` method: `Attempt to invoke virtual method 'void androidx.camera.view.PreviewView.setScaleType(androidx.camera.view.PreviewView$ScaleType)' on a null object reference`.
+In this case, make sure that the databinding library is enabled (see [Data Binding](#data-binding)).
 
 ## Terms & Privacy
 

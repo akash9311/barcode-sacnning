@@ -20,9 +20,11 @@ import com.getcapacitor.annotation.ActivityCallback;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.annotation.Permission;
 import com.getcapacitor.annotation.PermissionCallback;
-import com.google.android.gms.common.moduleinstall.ModuleInstallStatusUpdate;
 import com.google.mlkit.vision.barcode.common.Barcode;
-import com.google.mlkit.vision.common.InputImage;
+import io.capawesome.capacitorjs.plugins.mlkit.barcodescanning.classes.options.SetZoomRatioOptions;
+import io.capawesome.capacitorjs.plugins.mlkit.barcodescanning.classes.results.GetMaxZoomRatioResult;
+import io.capawesome.capacitorjs.plugins.mlkit.barcodescanning.classes.results.GetMinZoomRatioResult;
+import io.capawesome.capacitorjs.plugins.mlkit.barcodescanning.classes.results.GetZoomRatioResult;
 import java.util.List;
 
 @CapacitorPlugin(
@@ -30,6 +32,8 @@ import java.util.List;
     permissions = { @Permission(strings = { Manifest.permission.CAMERA }, alias = BarcodeScannerPlugin.CAMERA) }
 )
 public class BarcodeScannerPlugin extends Plugin {
+
+    public static final String TAG = "BarcodeScanner";
 
     // Permission alias constants
     public static final String CAMERA = "camera";
@@ -39,10 +43,11 @@ public class BarcodeScannerPlugin extends Plugin {
     public static final String GOOGLE_BARCODE_SCANNER_MODULE_INSTALL_PROGRESS_EVENT = "googleBarcodeScannerModuleInstallProgress";
     public static final String ERROR_SCAN_CANCELED = "scan canceled.";
     public static final String ERROR_PATH_MISSING = "path must be provided.";
-    public static final String ERROR_BASE64_STRING_MISSING = "base64 image string missing";
     public static final String ERROR_LOAD_IMAGE_FAILED = "The image could not be loaded.";
+    public static final String ERROR_ZOOM_RATIO_MISSING = "zoomRatio must be provided.";
+    public static final String ERROR_NO_ACTIVE_SCAN_SESSION = "There is no active scan session.";
     public static final String ERROR_GOOGLE_BARCODE_SCANNER_MODULE_NOT_AVAILABLE =
-        "The Google Barcode Scanner Module is not available. You must install it first.";
+        "The Google Barcode Scanner Module is not available. You must install it first using the installGoogleBarcodeScannerModule method.";
     public static final String ERROR_GOOGLE_BARCODE_SCANNER_MODULE_ALREADY_INSTALLED =
         "The Google Barcode Scanner Module is already installed.";
     public static final String ERROR_PERMISSION_DENIED = "User denied access to camera.";
@@ -54,7 +59,7 @@ public class BarcodeScannerPlugin extends Plugin {
         try {
             implementation = new BarcodeScanner(this);
         } catch (Exception exception) {
-            Logger.error(exception.getMessage(), exception);
+            Logger.error(TAG, exception.getMessage(), exception);
         }
     }
 
@@ -89,7 +94,7 @@ public class BarcodeScannerPlugin extends Plugin {
 
                                 @Override
                                 public void error(Exception exception) {
-                                    Logger.error("startScan failed.", exception);
+                                    Logger.error(TAG, exception.getMessage(), exception);
                                     call.reject(exception.getMessage());
                                 }
                             }
@@ -97,9 +102,8 @@ public class BarcodeScannerPlugin extends Plugin {
                     }
                 );
         } catch (Exception exception) {
-            String message = exception.getMessage();
-            Logger.error(message, exception);
-            call.reject(message);
+            Logger.error(TAG, exception.getMessage(), exception);
+            call.reject(exception.getMessage());
         }
     }
 
@@ -114,9 +118,8 @@ public class BarcodeScannerPlugin extends Plugin {
                     }
                 );
         } catch (Exception exception) {
-            String message = exception.getMessage();
-            Logger.error(message, exception);
-            call.reject(message);
+            Logger.error(TAG, exception.getMessage(), exception);
+            call.reject(exception.getMessage());
         }
     }
 
@@ -153,62 +156,14 @@ public class BarcodeScannerPlugin extends Plugin {
 
                     @Override
                     public void error(Exception exception) {
-                        Logger.error("readBarcodeFromImage failed.", exception);
+                        Logger.error(TAG, "readBarcodeFromImage failed.", exception);
                         call.reject(exception.getMessage());
                     }
                 }
             );
         } catch (Exception exception) {
-            String message = exception.getMessage();
-            Logger.error(message, exception);
-            call.reject(message);
-        }
-    }
-
-
-
-    @PluginMethod
-    public void readBarcodeBase64(PluginCall call) {
-        try {
-            String base64 = call.getString("base64");
-            if (base64 == null) {
-                call.reject(ERROR_BASE64_STRING_MISSING);
-                return;
-            }
-
-            List<String> formatsOption = call.getArray("formats", new JSArray()).toList();
-            int[] formats = BarcodeScannerHelper.convertStringsToBarcodeScannerFormats(formatsOption.toArray(new String[0]));
-
-            ScanSettings scanSettings = new ScanSettings();
-            scanSettings.formats = formats;
-
-            implementation.readBarcodeBase64(
-                    base64,
-                    scanSettings,
-                    new ReadBarcodesFromImageResultCallback() {
-                        @Override
-                        public void success(List<Barcode> barcodes) {
-                            JSArray barcodeResults = new JSArray();
-                            for (Barcode barcode : barcodes) {
-                                barcodeResults.put(BarcodeScannerHelper.createBarcodeResultForBarcode(barcode, null, null));
-                            }
-
-                            JSObject result = new JSObject();
-                            result.put("barcodes", barcodeResults);
-                            call.resolve(result);
-                        }
-
-                        @Override
-                        public void error(Exception exception) {
-                            Logger.error("readBarcodeBase64 failed.", exception);
-                            call.reject(exception.getMessage());
-                        }
-                    }
-            );
-        } catch (Exception exception) {
-            String message = exception.getMessage();
-            Logger.error(message, exception);
-            call.reject(message);
+            Logger.error(TAG, exception.getMessage(), exception);
+            call.reject(exception.getMessage());
         }
     }
 
@@ -253,9 +208,8 @@ public class BarcodeScannerPlugin extends Plugin {
 
                                         @Override
                                         public void error(Exception exception) {
-                                            String message = exception.getMessage();
-                                            Logger.error(message, exception);
-                                            call.reject(message);
+                                            Logger.error(TAG, exception.getMessage(), exception);
+                                            call.reject(exception.getMessage());
                                         }
                                     }
                                 )
@@ -267,16 +221,14 @@ public class BarcodeScannerPlugin extends Plugin {
 
                     @Override
                     public void error(Exception exception) {
-                        String message = exception.getMessage();
-                        Logger.error(message, exception);
-                        call.reject(message);
+                        Logger.error(TAG, exception.getMessage(), exception);
+                        call.reject(exception.getMessage());
                     }
                 }
             );
         } catch (Exception exception) {
-            String message = exception.getMessage();
-            Logger.error(message, exception);
-            call.reject(message);
+            Logger.error(TAG, exception.getMessage(), exception);
+            call.reject(exception.getMessage());
         }
     }
 
@@ -287,9 +239,8 @@ public class BarcodeScannerPlugin extends Plugin {
             result.put("supported", implementation.isSupported());
             call.resolve(result);
         } catch (Exception exception) {
-            String message = exception.getMessage();
-            Logger.error(message, exception);
-            call.reject(message);
+            Logger.error(TAG, exception.getMessage(), exception);
+            call.reject(exception.getMessage());
         }
     }
 
@@ -299,9 +250,8 @@ public class BarcodeScannerPlugin extends Plugin {
             implementation.enableTorch();
             call.resolve();
         } catch (Exception exception) {
-            String message = exception.getMessage();
-            Logger.error(message, exception);
-            call.reject(message);
+            Logger.error(TAG, exception.getMessage(), exception);
+            call.reject(exception.getMessage());
         }
     }
 
@@ -311,9 +261,8 @@ public class BarcodeScannerPlugin extends Plugin {
             implementation.disableTorch();
             call.resolve();
         } catch (Exception exception) {
-            String message = exception.getMessage();
-            Logger.error(message, exception);
-            call.reject(message);
+            Logger.error(TAG, exception.getMessage(), exception);
+            call.reject(exception.getMessage());
         }
     }
 
@@ -323,9 +272,8 @@ public class BarcodeScannerPlugin extends Plugin {
             implementation.toggleTorch();
             call.resolve();
         } catch (Exception exception) {
-            String message = exception.getMessage();
-            Logger.error(message, exception);
-            call.reject(message);
+            Logger.error(TAG, exception.getMessage(), exception);
+            call.reject(exception.getMessage());
         }
     }
 
@@ -336,9 +284,8 @@ public class BarcodeScannerPlugin extends Plugin {
             result.put("enabled", implementation.isTorchEnabled());
             call.resolve(result);
         } catch (Exception exception) {
-            String message = exception.getMessage();
-            Logger.error(message, exception);
-            call.reject(message);
+            Logger.error(TAG, exception.getMessage(), exception);
+            call.reject(exception.getMessage());
         }
     }
 
@@ -349,9 +296,77 @@ public class BarcodeScannerPlugin extends Plugin {
             result.put("available", implementation.isTorchAvailable());
             call.resolve(result);
         } catch (Exception exception) {
-            String message = exception.getMessage();
-            Logger.error(message, exception);
-            call.reject(message);
+            Logger.error(TAG, exception.getMessage(), exception);
+            call.reject(exception.getMessage());
+        }
+    }
+
+    @PluginMethod
+    public void setZoomRatio(PluginCall call) {
+        try {
+            Float zoomRatio = call.getFloat("zoomRatio");
+            if (zoomRatio == null) {
+                call.reject(ERROR_ZOOM_RATIO_MISSING);
+                return;
+            }
+
+            SetZoomRatioOptions options = new SetZoomRatioOptions(zoomRatio);
+            implementation.setZoomRatio(options);
+            call.resolve();
+        } catch (Exception exception) {
+            Logger.error(TAG, exception.getMessage(), exception);
+            call.reject(exception.getMessage());
+        }
+    }
+
+    @PluginMethod
+    public void getZoomRatio(PluginCall call) {
+        try {
+            boolean isCameraActive = implementation.isCameraActive();
+            if (!isCameraActive) {
+                call.reject(ERROR_NO_ACTIVE_SCAN_SESSION);
+                return;
+            }
+
+            GetZoomRatioResult result = implementation.getZoomRatio();
+            call.resolve(result.toJSObject());
+        } catch (Exception exception) {
+            Logger.error(TAG, exception.getMessage(), exception);
+            call.reject(exception.getMessage());
+        }
+    }
+
+    @PluginMethod
+    public void getMinZoomRatio(PluginCall call) {
+        try {
+            boolean isCameraActive = implementation.isCameraActive();
+            if (!isCameraActive) {
+                call.reject(ERROR_NO_ACTIVE_SCAN_SESSION);
+                return;
+            }
+
+            GetMinZoomRatioResult result = implementation.getMinZoomRatio();
+            call.resolve(result.toJSObject());
+        } catch (Exception exception) {
+            Logger.error(TAG, exception.getMessage(), exception);
+            call.reject(exception.getMessage());
+        }
+    }
+
+    @PluginMethod
+    public void getMaxZoomRatio(PluginCall call) {
+        try {
+            boolean isCameraActive = implementation.isCameraActive();
+            if (!isCameraActive) {
+                call.reject(ERROR_NO_ACTIVE_SCAN_SESSION);
+                return;
+            }
+
+            GetMaxZoomRatioResult result = implementation.getMaxZoomRatio();
+            call.resolve(result.toJSObject());
+        } catch (Exception exception) {
+            Logger.error(TAG, exception.getMessage(), exception);
+            call.reject(exception.getMessage());
         }
     }
 
@@ -360,9 +375,8 @@ public class BarcodeScannerPlugin extends Plugin {
         try {
             implementation.openSettings(call);
         } catch (Exception exception) {
-            String message = exception.getMessage();
-            Logger.error(message, exception);
-            call.reject(message);
+            Logger.error(TAG, exception.getMessage(), exception);
+            call.reject(exception.getMessage());
         }
     }
 
@@ -380,16 +394,14 @@ public class BarcodeScannerPlugin extends Plugin {
 
                     @Override
                     public void error(Exception exception) {
-                        String message = exception.getMessage();
-                        Logger.error(message, exception);
-                        call.reject(message);
+                        Logger.error(TAG, exception.getMessage(), exception);
+                        call.reject(exception.getMessage());
                     }
                 }
             );
         } catch (Exception exception) {
-            String message = exception.getMessage();
-            Logger.error(message, exception);
-            call.reject(message);
+            Logger.error(TAG, exception.getMessage(), exception);
+            call.reject(exception.getMessage());
         }
     }
 
@@ -405,16 +417,14 @@ public class BarcodeScannerPlugin extends Plugin {
 
                     @Override
                     public void error(Exception exception) {
-                        String message = exception.getMessage();
-                        Logger.error(message, exception);
-                        call.reject(message);
+                        Logger.error(TAG, exception.getMessage(), exception);
+                        call.reject(exception.getMessage());
                     }
                 }
             );
         } catch (Exception exception) {
-            String message = exception.getMessage();
-            Logger.error(message, exception);
-            call.reject(message);
+            Logger.error(TAG, exception.getMessage(), exception);
+            call.reject(exception.getMessage());
         }
     }
 
@@ -443,7 +453,7 @@ public class BarcodeScannerPlugin extends Plugin {
             }
             call.resolve();
         } catch (Exception exception) {
-            Logger.error(exception.getMessage(), exception);
+            Logger.error(TAG, exception.getMessage(), exception);
         }
     }
 
@@ -463,7 +473,7 @@ public class BarcodeScannerPlugin extends Plugin {
             result.put("barcode", barcodeResult);
             notifyListeners(BARCODE_SCANNED_EVENT, result);
         } catch (Exception exception) {
-            Logger.error(exception.getMessage(), exception);
+            Logger.error(TAG, exception.getMessage(), exception);
         }
     }
 
@@ -474,7 +484,7 @@ public class BarcodeScannerPlugin extends Plugin {
 
             notifyListeners(SCAN_ERROR_EVENT, result);
         } catch (Exception exception) {
-            Logger.error(exception.getMessage(), exception);
+            Logger.error(TAG, exception.getMessage(), exception);
         }
     }
 
@@ -488,7 +498,7 @@ public class BarcodeScannerPlugin extends Plugin {
 
             notifyListeners(GOOGLE_BARCODE_SCANNER_MODULE_INSTALL_PROGRESS_EVENT, result);
         } catch (Exception exception) {
-            Logger.error(exception.getMessage(), exception);
+            Logger.error(TAG, exception.getMessage(), exception);
         }
     }
 
